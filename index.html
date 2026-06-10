@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Briefing — AI · Tech · Career</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#f7f7f5; color:#1d1d1b; line-height:1.5; }
+  .wrap { display:flex; min-height:100vh; }
+
+  .sidebar { width:236px; flex:0 0 236px; background:#efeee9; border-right:1px solid #e0ded7;
+    padding:22px 16px; overflow-y:auto; }
+  .brand { font-size:18px; font-weight:800; color:#d97757; letter-spacing:-.01em; }
+  .brand-sub { font-size:12px; color:#8a8576; margin:2px 0 20px; }
+  .nav-label { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:#a8a394;
+    margin:14px 4px 6px; font-weight:600; }
+  .day { display:flex; align-items:center; gap:9px; width:100%; text-align:left; background:transparent;
+    border:1px solid transparent; border-radius:9px; padding:9px 11px; margin-bottom:3px;
+    cursor:pointer; font-size:13.5px; color:#3a382f; }
+  .day:hover { background:#e4e2da; }
+  .day.active { background:#d97757; color:#fff; font-weight:600; }
+  .day.active .ic { stroke:#fff; }
+  .day .ic { width:15px; height:15px; flex:0 0 auto; stroke:#9a9484; }
+  .day .lbl { flex:1; }
+  .day .rel { font-size:11px; opacity:.7; }
+  .day.active .rel { opacity:.85; }
+  .side-foot { font-size:11px; color:#a8a394; margin-top:22px; padding:0 4px; line-height:1.5; }
+
+  .main { flex:1; padding:30px 40px; max-width:900px; overflow-y:auto; }
+  .eyebrow { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#d97757; margin-bottom:4px; }
+  .head-row { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:22px; }
+  h1 { font-size:30px; margin:0; letter-spacing:-.02em; font-weight:800; }
+  .readtime { display:flex; align-items:center; gap:6px; font-size:13px; color:#8a8576; white-space:nowrap; }
+  .readtime svg { width:14px; height:14px; }
+
+  .tabs { display:flex; gap:4px; margin-bottom:22px; border-bottom:1px solid #e6e4dd; flex-wrap:wrap; }
+  .tab { display:flex; align-items:center; gap:7px; background:transparent; border:none;
+    border-bottom:2px solid transparent; padding:9px 13px; cursor:pointer; font-size:14px;
+    color:#6b6757; font-weight:500; margin-bottom:-1px; }
+  .tab:hover { color:#1d1d1b; }
+  .tab.active { color:#d97757; border-bottom-color:#d97757; font-weight:700; }
+  .tab svg { width:15px; height:15px; }
+  .tab .cnt { font-size:11px; color:#a8a394; }
+
+  .item { background:#fff; border:1px solid #ebe9e2; border-radius:12px; padding:16px 18px 16px; margin-bottom:13px; }
+  .meta { display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+  .pill { font-size:11px; font-weight:700; color:#b15c3f; background:#fbf0eb; border-radius:6px; padding:3px 9px; }
+  .src-name { font-size:12.5px; color:#8a8576; font-weight:600; }
+  .item h3 { margin:0 0 7px; font-size:18px; line-height:1.3; font-weight:700; letter-spacing:-.01em; }
+  .item p { margin:0 0 13px; font-size:14px; color:#56544b; }
+  .actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .act { font-size:13px; font-weight:600; border-radius:8px; padding:7px 13px; cursor:pointer;
+    text-decoration:none; border:1px solid #e0ddd3; display:inline-flex; align-items:center; gap:6px; }
+  .act.src { background:#fff; color:#b15c3f; }
+  .act.src:hover { background:#fbf4f1; }
+  .sources { font-size:12.5px; color:#8a8576; margin-top:24px; border-top:1px solid #e8e6df; padding-top:13px; }
+  .status,.empty { color:#8a8576; font-size:14px; padding:16px 4px; }
+  .empty { padding:40px 4px; }
+  .err { background:#fbeee9; border:1px solid #efc9ba; color:#9a4a2c; border-radius:10px;
+    padding:14px 16px; font-size:13.5px; line-height:1.55; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="sidebar">
+    <div class="brand">Daily Logs</div>
+    <div class="brand-sub">AI · Tech · Career briefings</div>
+    <div class="nav-label">Archive</div>
+    <div id="dayList"><div class="status">Loading…</div></div>
+    <div class="side-foot">Auto-updated daily. Public read-only view.</div>
+  </nav>
+  <main class="main">
+    <div id="content"><div class="status">Loading latest brief…</div></div>
+  </main>
+</div>
+<script>
+/* ===== CONFIG ===== */
+const FOLDER_ID = "1JSLSkiFSNkGFtt34VorivjYj1q-AYh2b";
+const API_KEY   = "AIzaSyCGE2ShFE0f5WP0ZAlA_PrfJ4Eal7KGW1U";
+const DRIVE = "https://www.googleapis.com/drive/v3";
+/* ================= */
+
+const CATS = [{key:"AI",label:"AI News",tag:"AI"},{key:"TECH",label:"Tech News",tag:"Tech"},{key:"CAREER",label:"Career News",tag:"Career"}];
+const CATTAG = {AI:"AI", TECH:"Tech", CAREER:"Career"};
+const IC = {
+  cal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+  AI:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
+  TECH:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
+  CAREER:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+};
+
+function clean(s){ return s.replace(/\\(.)/g,"$1"); }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function dateFromTitle(t){ const m=t.match(/(\d{4}-\d{2}-\d{2})/); return m?m[1]:null; }
+function fmtEyebrow(iso){ return new Date(iso+"T12:00:00").toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}).toUpperCase(); }
+function fmtDay(iso){ return new Date(iso+"T12:00:00").toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
+function relLabel(iso){ const t=new Date(); t.setHours(12,0,0,0);
+  const d=new Date(iso+"T12:00:00"); const diff=Math.round((t-d)/86400000);
+  if(diff===0) return "Today"; if(diff===1) return "Yesterday"; if(diff<7) return diff+"d ago"; return ""; }
+function sourceName(url){ try{ const h=new URL(url).hostname.replace(/^www\./,'');
+  const map={'cnbc.com':'CNBC','anthropic.com':'Anthropic','microsoft.ai':'Microsoft','llm-stats.com':'LLM-Stats',
+    'cooley.com':'Cooley','engadget.com':'Engadget','macrumors.com':'MacRumors','lennysnewsletter.com':"Lenny's Newsletter",
+    'axialsearch.com':'Axial Search','userpilot.com':'Userpilot','scriptbyai.com':'ScriptByAI'};
+  return map[h]|| h.split('.')[0].replace(/^\w/,c=>c.toUpperCase()); }catch(e){ return ""; } }
+
+function parseBrief(raw){
+  const lines = clean(raw).split(/\n/).map(l=>l.trim());
+  let title="", intro="", sources="", cat=null, items=[], cur=null;
+  for(const ln of lines){
+    if(!ln) continue;
+    if(ln.startsWith("# ")){ title=ln.slice(2); continue; }
+    const cm = ln.match(/^##\s+(.+)/);
+    if(cm){ cat = cm[1].trim().toUpperCase().split(/\s|—/)[0]; cur=null; continue; }
+    if(/^sources:/i.test(ln)){ sources=ln; cur=null; continue; }
+    const sm = ln.match(/^SRC:\s*(\S+)/);
+    if(sm){ if(cur) cur.src=sm[1]; continue; }
+    const im = ln.match(/^\[(\d+)\]\s*(.+)/);
+    if(im){ cur={cat:cat||"AI", score:parseInt(im[1],10), headline:im[2], body:"", src:""}; items.push(cur); continue; }
+    if(!cat && !cur){ intro = intro? intro+" "+ln : ln; continue; }
+    if(cur){ cur.body = cur.body? cur.body+" "+ln : ln; }
+  }
+  return {title, intro, sources, items};
+}
+
+let FILES=[], PARSED=null, activeTab="ALL";
+
+function renderItems(){
+  let list = PARSED.items.map((it,i)=>({it,i}));
+  if(activeTab!=="ALL") list = list.filter(o=>o.it.cat===activeTab);
+  list.sort((a,b)=> b.it.score-a.it.score);
+  let html='';
+  if(!list.length) html='<div class="empty">No items in this category.</div>';
+  for(const {it} of list){
+    const sn = it.src? sourceName(it.src):"";
+    html += '<div class="item"><div class="meta"><span class="pill">'+(CATTAG[it.cat]||it.cat)+'</span>'
+      + (sn?'<span class="src-name">'+esc(sn)+'</span>':'') + '</div>'
+      + '<h3>'+esc(it.headline)+'</h3><p>'+esc(it.body)+'</p>'
+      + '<div class="actions">'
+      + (it.src?'<a class="act src" href="'+it.src+'" target="_blank" rel="noopener">Read full context →</a>':'')
+      + '</div></div>';
+  }
+  if(PARSED.sources) html += '<div class="sources">'+esc(PARSED.sources)+'</div>';
+  document.getElementById('itemArea').innerHTML = html;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===activeTab));
+}
+
+function renderBrief(file){
+  const p=PARSED; const counts={ALL:p.items.length};
+  CATS.forEach(c=> counts[c.key]=p.items.filter(i=>i.cat===c.key).length);
+  const words = p.items.reduce((a,it)=>a+ (it.body? it.body.split(/\s+/).length:0),0);
+  const mins = Math.max(1, Math.round(words/200));
+  const eyebrow = file && file._date ? fmtEyebrow(file._date) : "";
+  let tabs='<button class="tab" data-tab="ALL">'+IC.all+'All<span class="cnt">'+counts.ALL+'</span></button>';
+  CATS.forEach(c=>{ if(counts[c.key]>0) tabs+='<button class="tab" data-tab="'+c.key+'">'+IC[c.key]+c.label+'<span class="cnt">'+counts[c.key]+'</span></button>'; });
+  document.getElementById('content').innerHTML =
+    '<div class="eyebrow">'+eyebrow+'</div>'
+    + '<div class="head-row"><h1>Daily Briefing</h1><div class="readtime">'+IC.bolt+' '+mins+' min read</div></div>'
+    + '<div class="tabs">'+tabs+'</div><div id="itemArea"></div>';
+  document.querySelectorAll('.tab').forEach(t=> t.onclick=()=>{ activeTab=t.dataset.tab; renderItems(); });
+  activeTab="ALL"; renderItems();
+}
+
+async function loadFile(file){
+  document.querySelectorAll('.day').forEach(b=>b.classList.toggle('active', b.dataset.id===file.id));
+  document.getElementById('content').innerHTML='<div class="status">Loading…</div>';
+  try {
+    const res = await fetch(DRIVE+"/files/"+file.id+"/export?mimeType=text/plain&key="+API_KEY);
+    if(!res.ok) throw new Error("export "+res.status);
+    const txt = await res.text();
+    if(!txt){ document.getElementById('content').innerHTML='<div class="empty">This brief is empty.</div>'; return; }
+    PARSED = parseBrief(txt); renderBrief(file);
+  } catch(e){
+    document.getElementById('content').innerHTML='<div class="err">Couldn\'t load this brief ('+esc(String(e.message||e))+'). If this just went live, give it a minute and refresh.</div>';
+  }
+}
+
+async function init(){
+  const listEl=document.getElementById('dayList');
+  try {
+    const q = encodeURIComponent("'"+FOLDER_ID+"' in parents and mimeType='application/vnd.google-apps.document'");
+    const url = DRIVE+"/files?q="+q+"&key="+API_KEY+"&fields=files(id,name,createdTime)&orderBy=createdTime desc&pageSize=100";
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("list "+res.status);
+    const data = await res.json();
+    let files = (data.files||[]).filter(f=> /brief/i.test(f.name));
+    files.forEach(f=> f._date = dateFromTitle(f.name) || (f.createdTime||"").slice(0,10));
+    const byDate={};
+    files.forEach(f=>{ const d=f._date; if(!byDate[d]||(f.createdTime||"")>(byDate[d].createdTime||"")) byDate[d]=f; });
+    FILES = Object.values(byDate).sort((a,b)=> (b._date||"").localeCompare(a._date||""));
+    if(!FILES.length){ listEl.innerHTML='<div class="empty">No briefs yet.</div>';
+      document.getElementById('content').innerHTML='<div class="empty">No briefs published yet. Check back after the next morning update.</div>'; return; }
+    listEl.innerHTML='';
+    FILES.forEach(f=>{ const btn=document.createElement('button'); btn.className='day'; btn.dataset.id=f.id;
+      const rel=relLabel(f._date);
+      btn.innerHTML = IC.cal + '<span class="lbl">'+(f._date?fmtDay(f._date):f.name)+'</span>' + (rel?'<span class="rel">'+rel+'</span>':'');
+      btn.onclick=()=>loadFile(f); listEl.appendChild(btn); });
+    loadFile(FILES[0]);
+  } catch(e){
+    listEl.innerHTML='';
+    document.getElementById('content').innerHTML='<div class="err"><b>Couldn\'t reach the briefs.</b><br>'+esc(String(e.message||e))
+      +'<br><br>Usual causes: the Drive folder isn\'t public yet, or the API key\'s website restriction doesn\'t include this exact domain.</div>';
+  }
+}
+init();
+</script>
+</body>
+</html>
