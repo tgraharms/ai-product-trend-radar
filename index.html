@@ -112,6 +112,10 @@
   .sources { font-size:12.5px; color:#8a8576; margin-top:24px; border-top:1px solid #e8e6df; padding-top:13px; }
   .status,.empty { color:#8a8576; font-size:14px; padding:16px 4px; }
   .empty { padding:40px 4px; }
+  .err { background:#fbeee9; border:1px solid #efc9ba; color:#9a4a2c; border-radius:10px;
+    padding:14px 16px; font-size:13.5px; line-height:1.55; }
+  .err button { margin-top:10px; background:#d97757; color:#fff; border:none; border-radius:8px;
+    padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; display:block; }
 </style>
 <script>document.documentElement.classList.toggle('nav-open', window.innerWidth > 760);</script>
 </head>
@@ -280,7 +284,11 @@ async function fetchAllBriefFiles(){
   do {
     const params = { query: "parentId = '"+FOLDER_ID+"' and title contains 'Brief'", pageSize: 100 };
     if(pageToken) params.pageToken = pageToken;
-    const r = await window.cowork.callMcpTool("mcp__06c97456-f224-4583-98a0-1c8127180a90__search_files", params);
+    let r;
+    try { r = await window.cowork.callMcpTool("mcp__06c97456-f224-4583-98a0-1c8127180a90__search_files", params); }
+    catch(e){ throw new Error(String(e && e.message || e)); }
+    if(r && r.isError){ let msg=""; try{ msg=r.content[0].text; }catch(e){}
+      throw new Error(msg || "The Google Drive tool returned an error."); }
     const data = unwrap(r);
     if(!data) break;
     if(Array.isArray(data.files)) all = all.concat(data.files);
@@ -291,7 +299,17 @@ async function fetchAllBriefFiles(){
 }
 
 async function init(){
-  const raw = await fetchAllBriefFiles();
+  let raw;
+  try { raw = await fetchAllBriefFiles(); }
+  catch(e){
+    document.getElementById('dayList').innerHTML='';
+    document.getElementById('content').innerHTML =
+      '<div class="err"><b>Can\'t reach Google Drive.</b><br>'+esc(String(e.message||e))
+      + '<br><br>This artifact needs its Google Drive permission re-approved (updating the artifact resets it). '
+      + 'If an approval prompt appears, allow it — then hit Retry or Reload.'
+      + '<button onclick="init()">Retry</button></div>';
+    return;
+  }
   let files = raw.filter(f=> f.mimeType==='application/vnd.google-apps.document');
   files.forEach(f=> f._date = dateFromTitle(f.title) || (f.createdTime||"").slice(0,10));
   const byDate={};
