@@ -1,9 +1,24 @@
 <!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Ai Pm Daily Brief Log",
+  "schemaVersion": 1,
+  "description": "Daily AI / Tech / PM-career / Consumer brief with importance scoring and category tabs. Reads dated Google Docs from the 'CoWork Playground' Drive folder, ranks items 1-10, and shows today plus past entries in a clickable date log.",
+  "mcpTools": [
+    "mcp__06c97456-f224-4583-98a0-1c8127180a90__search_files",
+    "mcp__06c97456-f224-4583-98a0-1c8127180a90__read_file_content"
+  ],
+  "mcpServerNames": [
+    "Google Drive",
+    "Google Drive"
+  ]
+}
+</script>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Daily Briefing — AI · Tech · Career</title>
+<title>Daily Briefing — AI · Tech · Career · Consumer</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -11,8 +26,9 @@
     background:#f7f7f5; color:#1d1d1b; line-height:1.5; }
   .wrap { display:flex; min-height:100vh; }
 
+  /* ---- Sidebar ---- */
   .sidebar { width:236px; flex:0 0 236px; background:#efeee9; border-right:1px solid #e0ded7;
-    padding:22px 16px; overflow-y:auto; }
+    padding:22px 16px; overflow-y:auto; transition:margin-left .2s ease, transform .2s ease; }
   .brand { font-size:18px; font-weight:800; color:#d97757; letter-spacing:-.01em; }
   .brand-sub { font-size:12px; color:#8a8576; margin:2px 0 20px; }
   .nav-label { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:#a8a394;
@@ -27,8 +43,31 @@
   .day .lbl { flex:1; }
   .day .rel { font-size:11px; opacity:.7; }
   .day.active .rel { opacity:.85; }
-  .side-foot { font-size:11px; color:#a8a394; margin-top:22px; padding:0 4px; line-height:1.5; }
 
+  /* ---- Collapsible sidebar ---- */
+  .nav-toggle { display:inline-flex; align-items:center; gap:8px; background:#efeee9; border:1px solid #e0ded7;
+    color:#6b6757; font-size:13px; font-weight:600; border-radius:8px; padding:7px 12px; cursor:pointer; margin-bottom:18px; }
+  .nav-toggle:hover { background:#e7e5dd; }
+  .nav-toggle .bars { font-size:15px; line-height:1; }
+  .backdrop { display:none; }
+  html:not(.nav-open) .sidebar { margin-left:-237px; }
+
+  /* ---- Narrow widths (Cowork side panel / mobile) ---- */
+  @media (max-width: 760px){
+    .sidebar { position:fixed; top:0; left:0; height:100%; width:240px; z-index:60; margin-left:0 !important;
+      transform:translateX(-100%); box-shadow:0 0 28px rgba(0,0,0,.14); }
+    html.nav-open .sidebar { transform:translateX(0); }
+    html.nav-open .backdrop { display:block; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:55; }
+    .main { padding:18px 16px; max-width:none; }
+    h1 { font-size:23px; }
+    .head-row { margin-bottom:16px; }
+    .readtime { font-size:12px; }
+    .tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tab { flex:0 0 auto; padding:9px 11px; }
+    .item h3 { font-size:16.5px; }
+  }
+
+  /* ---- Main ---- */
   .main { flex:1; padding:30px 40px; max-width:900px; overflow-y:auto; }
   .eyebrow { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
     color:#d97757; margin-bottom:4px; }
@@ -46,13 +85,15 @@
   .tab svg { width:15px; height:15px; }
   .tab .cnt { font-size:11px; color:#a8a394; }
 
+  .item { background:#fff; border:1px solid #ebe9e2; border-radius:12px; padding:16px 18px 16px;
+    margin-bottom:13px; }
+  .meta { display:flex; align-items:center; gap:9px; margin-bottom:9px; flex-wrap:wrap; }
+  .pill { font-size:11px; font-weight:700; color:#b15c3f; background:#fbf0eb;
+    border-radius:6px; padding:3px 9px; }
+  .pill.region { color:#5f7a63; background:#eef1ee; }
   .subhead { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
     color:#8a8576; margin:18px 0 11px; padding-bottom:6px; border-bottom:1px solid #ece9e1; }
   .subhead:first-child { margin-top:0; }
-  .item { background:#fff; border:1px solid #ebe9e2; border-radius:12px; padding:16px 18px 16px; margin-bottom:13px; }
-  .meta { display:flex; align-items:center; gap:9px; margin-bottom:9px; flex-wrap:wrap; }
-  .pill { font-size:11px; font-weight:700; color:#b15c3f; background:#fbf0eb; border-radius:6px; padding:3px 9px; }
-  .pill.region { color:#5f7a63; background:#eef1ee; }
   .src-name { font-size:12.5px; color:#8a8576; font-weight:600; }
   .item h3 { margin:0 0 7px; font-size:18px; line-height:1.3; font-weight:700; letter-spacing:-.01em; }
   .item p { margin:0 0 13px; font-size:14px; color:#56544b; }
@@ -61,35 +102,16 @@
     text-decoration:none; border:1px solid #e0ddd3; display:inline-flex; align-items:center; gap:6px; }
   .act.src { background:#fff; color:#b15c3f; }
   .act.src:hover { background:#fbf4f1; }
+  .act.deep { background:#d97757; color:#fff; border-color:#d97757; }
+  .act.deep:hover { background:#c8674a; }
+  .act.deep:disabled { opacity:.6; cursor:default; }
+  .deep-out { margin-top:12px; font-size:13.5px; color:#3a382f; background:#faf6f3;
+    border-left:3px solid #d97757; border-radius:0 8px 8px 0; padding:11px 14px;
+    line-height:1.55; white-space:pre-wrap; }
+  .deep-note { font-size:11.5px; color:#a8a394; margin-top:6px; }
   .sources { font-size:12.5px; color:#8a8576; margin-top:24px; border-top:1px solid #e8e6df; padding-top:13px; }
   .status,.empty { color:#8a8576; font-size:14px; padding:16px 4px; }
   .empty { padding:40px 4px; }
-  .err { background:#fbeee9; border:1px solid #efc9ba; color:#9a4a2c; border-radius:10px;
-    padding:14px 16px; font-size:13.5px; line-height:1.55; }
-
-  /* ---------- Collapsible sidebar ---------- */
-  .nav-toggle { display:inline-flex; align-items:center; gap:8px; background:#efeee9; border:1px solid #e0ded7;
-    color:#6b6757; font-size:13px; font-weight:600; border-radius:8px; padding:7px 12px; cursor:pointer; margin-bottom:18px; }
-  .nav-toggle:hover { background:#e7e5dd; }
-  .nav-toggle .bars { font-size:15px; line-height:1; }
-  .backdrop { display:none; }
-  .sidebar { transition:margin-left .2s ease, transform .2s ease; }
-  html:not(.nav-open) .sidebar { margin-left:-237px; }
-
-  /* ---------- Mobile ---------- */
-  @media (max-width: 760px){
-    .sidebar { position:fixed; top:0; left:0; height:100%; width:240px; z-index:60; margin-left:0 !important;
-      transform:translateX(-100%); box-shadow:0 0 28px rgba(0,0,0,.14); }
-    html.nav-open .sidebar { transform:translateX(0); }
-    html.nav-open .backdrop { display:block; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:55; }
-    .main { padding:18px 16px; max-width:none; }
-    h1 { font-size:23px; }
-    .head-row { margin-bottom:16px; }
-    .readtime { font-size:12px; }
-    .tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    .tab { flex:0 0 auto; padding:9px 11px; }
-    .item h3 { font-size:16.5px; }
-  }
 </style>
 <script>document.documentElement.classList.toggle('nav-open', window.innerWidth > 760);</script>
 </head>
@@ -98,10 +120,9 @@
   <div class="backdrop" id="backdrop"></div>
   <nav class="sidebar" id="sidebar">
     <div class="brand">Daily Logs</div>
-    <div class="brand-sub">AI · Tech · Career briefings</div>
+    <div class="brand-sub">AI · Tech · Career · Consumer</div>
     <div class="nav-label">Archive</div>
     <div id="dayList"><div class="status">Loading…</div></div>
-    <div class="side-foot">Auto-updated daily. Public read-only view.</div>
   </nav>
   <main class="main">
     <button class="nav-toggle" id="navToggle" aria-label="Toggle archive"><span class="bars">☰</span> Archive</button>
@@ -109,24 +130,28 @@
   </main>
 </div>
 <script>
-/* ===== CONFIG ===== */
 const FOLDER_ID = "1JSLSkiFSNkGFtt34VorivjYj1q-AYh2b";
-const API_KEY   = "AIzaSyCGE2ShFE0f5WP0ZAlA_PrfJ4Eal7KGW1U";
-const DRIVE = "https://www.googleapis.com/drive/v3";
-/* ================= */
+const CATS = [
+  {key:"AI",label:"AI News",tag:"AI"},
+  {key:"TECH",label:"Tech News",tag:"Tech"},
+  {key:"CAREER",label:"Career",tag:"Career"},
+  {key:"CONSUMER",label:"Consumer",tag:"Consumer"}
+];
+const CATTAG = {AI:"AI", TECH:"Tech", CAREER:"Career", CONSUMER:"Consumer"};
 
-const CATS = [{key:"AI",label:"AI News",tag:"AI"},{key:"TECH",label:"Tech News",tag:"Tech"},{key:"CAREER",label:"Career News",tag:"Career"}];
-const CATTAG = {AI:"AI", TECH:"Tech", CAREER:"Career"};
-const SUB_ORDER = ["Malaysia","Global"];
+// icons
 const IC = {
   cal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
   AI:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
   TECH:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
   CAREER:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+  CONSUMER:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
 };
 
+function unwrap(r){ if(!r||r.isError) return null; if(r.structuredContent) return r.structuredContent;
+  try { return JSON.parse(r.content[0].text); } catch(e){ return null; } }
 function clean(s){ return s.replace(/\\(.)/g,"$1"); }
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function dateFromTitle(t){ const m=t.match(/(\d{4}-\d{2}-\d{2})/); return m?m[1]:null; }
@@ -143,6 +168,7 @@ function sourceName(url){ try{ const h=new URL(url).hostname.replace(/^www\./,''
     'blog.google':'Google','whitehouse.gov':'White House'};
   return map[h]|| h.split('.').slice(-2,-1)[0].replace(/^\w/,c=>c.toUpperCase()); }catch(e){ return ""; } }
 
+const SUB_ORDER = ["Malaysia","Global"];
 function parseBrief(raw){
   const lines = clean(raw).split(/\n/).map(l=>l.trim());
   let title="", intro="", sources="", cat=null, sub=null, items=[], cur=null;
@@ -164,35 +190,59 @@ function parseBrief(raw){
   return {title, intro, sources, items};
 }
 
-let FILES=[], PARSED=null, activeTab="ALL";
+let FILES=[], PARSED=null, CURFILE=null, activeTab="ALL";
 
-function cardHTML(it){
+async function goDeeper(idx, btn){
+  const it = PARSED.items[idx]; const out = document.getElementById('deep-'+idx);
+  btn.disabled=true; btn.textContent="Thinking…"; out.style.display='block'; out.textContent="";
+  try {
+    const prompt = "You are briefing a product manager. In 4-5 sentences, give a deeper, plain-English explanation of this news item: what it actually means, why it matters, and what to watch next. Be specific; do not just repeat the summary.";
+    const res = await window.cowork.askClaude(prompt, [it.headline+"\n\n"+it.body]);
+    let txt = typeof res==="string" ? res : (res && (res.text||res.output||res.content||(Array.isArray(res)&&res[0]&&res[0].text))) || "";
+    if(!txt) txt = JSON.stringify(res);
+    out.textContent = txt;
+    const note=document.createElement('div'); note.className='deep-note';
+    note.textContent="Quick in-page take · for full depth, open the source."; out.appendChild(note);
+  } catch(e){ out.textContent="Couldn't generate a deeper take here. Try the source link above."; }
+  btn.textContent="Go deeper with Claude"; btn.disabled=false;
+}
+
+function cardHTML(it,i){
   const sn = it.src? sourceName(it.src):"";
-  return '<div class="item"><div class="meta"><span class="pill">'+(CATTAG[it.cat]||it.cat)+'</span>'
-    + (it.sub?'<span class="pill region">'+esc(it.sub)+'</span>':'')
-    + (sn?'<span class="src-name">'+esc(sn)+'</span>':'') + '</div>'
-    + '<h3>'+esc(it.headline)+'</h3><p>'+esc(it.body)+'</p>'
+  return '<div class="item">'
+    + '<div class="meta">'
+    +   '<span class="pill">'+(CATTAG[it.cat]||it.cat)+'</span>'
+    +   (it.sub?'<span class="pill region">'+esc(it.sub)+'</span>':'')
+    +   (sn?'<span class="src-name">'+esc(sn)+'</span>':'')
+    + '</div>'
+    + '<h3>'+esc(it.headline)+'</h3>'
+    + '<p>'+esc(it.body)+'</p>'
     + '<div class="actions">'
-    + (it.src?'<a class="act src" href="'+it.src+'" target="_blank" rel="noopener">Read full context →</a>':'')
-    + '</div></div>';
+    +   (it.src?'<a class="act src" href="'+it.src+'" target="_blank" rel="noopener">Read full context →</a>':'')
+    +   '<button class="act deep" data-i="'+i+'">Go deeper with Claude</button>'
+    + '</div>'
+    + '<div class="deep-out" id="deep-'+i+'" style="display:none"></div>'
+    + '</div>';
 }
 
 function renderItems(){
-  let list = PARSED.items.filter(it=> activeTab==="ALL" || it.cat===activeTab);
+  let list = PARSED.items.map((it,i)=>({it,i}));
+  if(activeTab!=="ALL") list = list.filter(o=>o.it.cat===activeTab);
   let html='';
-  if(!list.length){ html='<div class="empty">No items in this category.</div>'; }
-  else if(activeTab!=="ALL" && list.some(it=>it.sub)){
+  if(!list.length){ html='<div class="empty">No items in this category today.</div>'; }
+  else if(activeTab!=="ALL" && list.some(o=>o.it.sub)){
     const groups={};
-    list.forEach(it=>{ const s=it.sub||"Other"; (groups[s]=groups[s]||[]).push(it); });
+    list.forEach(o=>{ const s=o.it.sub||"Other"; (groups[s]=groups[s]||[]).push(o); });
     const keys=Object.keys(groups).sort((a,b)=>{ const ia=SUB_ORDER.indexOf(a), ib=SUB_ORDER.indexOf(b);
       return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b); });
     keys.forEach(k=>{ html+='<div class="subhead">'+esc(k)+'</div>';
-      groups[k].sort((a,b)=>b.score-a.score).forEach(it=> html+=cardHTML(it)); });
+      groups[k].sort((a,b)=>b.it.score-a.it.score).forEach(o=> html+=cardHTML(o.it,o.i)); });
   } else {
-    list.sort((a,b)=> b.score-a.score).forEach(it=> html+=cardHTML(it));
+    list.sort((a,b)=> b.it.score-a.it.score).forEach(o=> html+=cardHTML(o.it,o.i));
   }
   if(PARSED.sources) html += '<div class="sources">'+esc(PARSED.sources)+'</div>';
   document.getElementById('itemArea').innerHTML = html;
+  document.querySelectorAll('.act.deep').forEach(b=> b.onclick=()=>goDeeper(+b.dataset.i,b));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===activeTab));
 }
 
@@ -206,53 +256,57 @@ function renderBrief(file){
   CATS.forEach(c=>{ if(counts[c.key]>0) tabs+='<button class="tab" data-tab="'+c.key+'">'+IC[c.key]+c.label+'<span class="cnt">'+counts[c.key]+'</span></button>'; });
   document.getElementById('content').innerHTML =
     '<div class="eyebrow">'+eyebrow+'</div>'
-    + '<div class="head-row"><h1>Daily Briefing</h1><div class="readtime">'+IC.bolt+' '+mins+' min read</div></div>'
-    + '<div class="tabs">'+tabs+'</div><div id="itemArea"></div>';
+    + '<div class="head-row"><h1>Daily Briefing</h1>'
+    +   '<div class="readtime">'+IC.bolt+' '+mins+' min read</div></div>'
+    + '<div class="tabs">'+tabs+'</div>'
+    + '<div id="itemArea"></div>';
   document.querySelectorAll('.tab').forEach(t=> t.onclick=()=>{ activeTab=t.dataset.tab; renderItems(); });
   activeTab="ALL"; renderItems();
 }
 
 async function loadFile(file){
+  CURFILE=file;
   document.querySelectorAll('.day').forEach(b=>b.classList.toggle('active', b.dataset.id===file.id));
   document.getElementById('content').innerHTML='<div class="status">Loading…</div>';
-  try {
-    const res = await fetch(DRIVE+"/files/"+file.id+"/export?mimeType=text/plain&key="+API_KEY);
-    if(!res.ok) throw new Error("export "+res.status);
-    const txt = await res.text();
-    if(!txt){ document.getElementById('content').innerHTML='<div class="empty">This brief is empty.</div>'; return; }
-    PARSED = parseBrief(txt); renderBrief(file);
-  } catch(e){
-    document.getElementById('content').innerHTML='<div class="err">Couldn\'t load this brief ('+esc(String(e.message||e))+'). If this just went live, give it a minute and refresh.</div>';
-  }
+  const r = await window.cowork.callMcpTool("mcp__06c97456-f224-4583-98a0-1c8127180a90__read_file_content",{fileId:file.id});
+  const data = unwrap(r); const txt = data&&data.fileContent ? data.fileContent : "";
+  if(!txt){ document.getElementById('content').innerHTML='<div class="empty">Could not load this brief.</div>'; return; }
+  PARSED = parseBrief(txt); renderBrief(file);
+}
+
+async function fetchAllBriefFiles(){
+  // Paginated fetch so the archive never silently truncates as it grows.
+  let all=[], pageToken=null, guard=0;
+  do {
+    const params = { query: "parentId = '"+FOLDER_ID+"' and title contains 'Brief'", pageSize: 100 };
+    if(pageToken) params.pageToken = pageToken;
+    const r = await window.cowork.callMcpTool("mcp__06c97456-f224-4583-98a0-1c8127180a90__search_files", params);
+    const data = unwrap(r);
+    if(!data) break;
+    if(Array.isArray(data.files)) all = all.concat(data.files);
+    pageToken = data.nextPageToken || data.next_page_token || null;
+    guard++;
+  } while(pageToken && guard < 30);
+  return all;
 }
 
 async function init(){
+  const raw = await fetchAllBriefFiles();
+  let files = raw.filter(f=> f.mimeType==='application/vnd.google-apps.document');
+  files.forEach(f=> f._date = dateFromTitle(f.title) || (f.createdTime||"").slice(0,10));
+  const byDate={};
+  files.forEach(f=>{ const d=f._date; if(!byDate[d]||(f.createdTime||"")>(byDate[d].createdTime||"")) byDate[d]=f; });
+  FILES = Object.values(byDate).sort((a,b)=> (b._date||"").localeCompare(a._date||""));
   const listEl=document.getElementById('dayList');
-  try {
-    const q = encodeURIComponent("'"+FOLDER_ID+"' in parents and mimeType='application/vnd.google-apps.document'");
-    const url = DRIVE+"/files?q="+q+"&key="+API_KEY+"&fields=files(id,name,createdTime)&orderBy=createdTime desc&pageSize=100";
-    const res = await fetch(url);
-    if(!res.ok) throw new Error("list "+res.status);
-    const data = await res.json();
-    let files = (data.files||[]).filter(f=> /brief/i.test(f.name));
-    files.forEach(f=> f._date = dateFromTitle(f.name) || (f.createdTime||"").slice(0,10));
-    const byDate={};
-    files.forEach(f=>{ const d=f._date; if(!byDate[d]||(f.createdTime||"")>(byDate[d].createdTime||"")) byDate[d]=f; });
-    FILES = Object.values(byDate).sort((a,b)=> (b._date||"").localeCompare(a._date||""));
-    if(!FILES.length){ listEl.innerHTML='<div class="empty">No briefs yet.</div>';
-      document.getElementById('content').innerHTML='<div class="empty">No briefs published yet. Check back after the next morning update.</div>'; return; }
-    listEl.innerHTML='';
-    FILES.forEach(f=>{ const btn=document.createElement('button'); btn.className='day'; btn.dataset.id=f.id;
-      const rel=relLabel(f._date);
-      btn.innerHTML = IC.cal + '<span class="lbl">'+(f._date?fmtDay(f._date):f.name)+'</span>' + (rel?'<span class="rel">'+rel+'</span>':'');
-      btn.onclick=()=>{ loadFile(f); if(window.innerWidth<=760) document.documentElement.classList.remove('nav-open'); };
-      listEl.appendChild(btn); });
-    loadFile(FILES[0]);
-  } catch(e){
-    listEl.innerHTML='';
-    document.getElementById('content').innerHTML='<div class="err"><b>Couldn\'t reach the briefs.</b><br>'+esc(String(e.message||e))
-      +'<br><br>Usual causes: the Drive folder isn\'t public yet, or the API key\'s website restriction doesn\'t include this exact domain.</div>';
-  }
+  if(!FILES.length){ listEl.innerHTML='<div class="empty">No briefs yet.</div>';
+    document.getElementById('content').innerHTML='<div class="empty">No briefs in the folder yet. Once the daily task runs, entries appear here.</div>'; return; }
+  listEl.innerHTML='';
+  FILES.forEach(f=>{ const btn=document.createElement('button'); btn.className='day'; btn.dataset.id=f.id;
+    const rel=relLabel(f._date);
+    btn.innerHTML = IC.cal + '<span class="lbl">'+(f._date?fmtDay(f._date):f.title)+'</span>' + (rel?'<span class="rel">'+rel+'</span>':'');
+    btn.onclick=()=>{ loadFile(f); if(window.innerWidth<=760) document.documentElement.classList.remove('nav-open'); };
+    listEl.appendChild(btn); });
+  loadFile(FILES[0]);
 }
 document.getElementById('navToggle').onclick = ()=> document.documentElement.classList.toggle('nav-open');
 document.getElementById('backdrop').onclick = ()=> document.documentElement.classList.remove('nav-open');
