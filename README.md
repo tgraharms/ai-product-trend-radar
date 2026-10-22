@@ -18,7 +18,7 @@ I built it for myself, a PM based in Malaysia. The page is public, so anyone who
 
 - **AI:** model launches, big company moves, research and regulation
 - **Tech:** Big Tech, chips and cloud
-- **Security:** major hacks, leaks, and products getting cracked or reverse engineered
+- **Community:** what developers, hackers and open-source folks are doing to big tech products, like AI-built clones of paid apps, jailbreaks and leaks
 - **Career:** how the PM role is changing, hiring and pay, split into Malaysia and Global
 - **Consumer:** AI news for everyday users
 

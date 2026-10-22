@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Daily Briefing: AI · Tech · Security · Career · Consumer</title>
+<title>Daily Briefing: AI · Tech · Community · Career · Consumer</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -98,7 +98,7 @@
   <div class="backdrop" id="backdrop"></div>
   <nav class="sidebar" id="sidebar">
     <div class="brand">Daily Logs</div>
-    <div class="brand-sub">AI · Tech · Security · Career · Consumer</div>
+    <div class="brand-sub">AI · Tech · Community · Career · Consumer</div>
     <div class="nav-label">Archive</div>
     <div id="dayList"><div class="status">Loading…</div></div>
     <div class="side-foot">Auto-updated daily. Public read-only view.</div>
@@ -114,15 +114,15 @@
 const BRIEFS_URL = "https://raw.githubusercontent.com/tgraharms/daily-brief/main/briefs/";
 /* ================= */
 
-const CATS = [{key:"AI",label:"AI News",tag:"AI"},{key:"TECH",label:"Tech News",tag:"Tech"},{key:"SECURITY",label:"Security",tag:"Security"},{key:"CAREER",label:"Career",tag:"Career"},{key:"CONSUMER",label:"Consumer",tag:"Consumer"}];
-const CATTAG = {AI:"AI", TECH:"Tech", SECURITY:"Security", CAREER:"Career", CONSUMER:"Consumer"};
+const CATS = [{key:"AI",label:"AI News",tag:"AI"},{key:"TECH",label:"Tech News",tag:"Tech"},{key:"COMMUNITY",label:"Community",tag:"Community"},{key:"CAREER",label:"Career",tag:"Career"},{key:"CONSUMER",label:"Consumer",tag:"Consumer"}];
+const CATTAG = {AI:"AI", TECH:"Tech", COMMUNITY:"Community", CAREER:"Career", CONSUMER:"Consumer"};
 const SUB_ORDER = ["Malaysia","Global"];
 const IC = {
   cal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
   all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
   AI:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
   TECH:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
-  SECURITY:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  COMMUNITY:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>',
   CAREER:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
   CONSUMER:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
