@@ -110,9 +110,8 @@
 </div>
 <script>
 /* ===== CONFIG ===== */
-const FOLDER_ID = "1JSLSkiFSNkGFtt34VorivjYj1q-AYh2b";
-const API_KEY   = "AIzaSyCGE2ShFE0f5WP0ZAlA_PrfJ4Eal7KGW1U";
-const DRIVE = "https://www.googleapis.com/drive/v3";
+// Briefs are read straight from the repo, so a new brief shows up as soon as the daily workflow commits it.
+const BRIEFS_URL = "https://raw.githubusercontent.com/tgraharms/daily-brief/main/briefs/";
 /* ================= */
 
 const CATS = [{key:"AI",label:"AI News",tag:"AI"},{key:"TECH",label:"Tech News",tag:"Tech"},{key:"CAREER",label:"Career",tag:"Career"},{key:"CONSUMER",label:"Consumer",tag:"Consumer"}];
@@ -217,8 +216,8 @@ async function loadFile(file){
   document.querySelectorAll('.day').forEach(b=>b.classList.toggle('active', b.dataset.id===file.id));
   document.getElementById('content').innerHTML='<div class="status">Loading…</div>';
   try {
-    const res = await fetch(DRIVE+"/files/"+file.id+"/export?mimeType=text/plain&key="+API_KEY);
-    if(!res.ok) throw new Error("export "+res.status);
+    const res = await fetch(BRIEFS_URL+file._date+".md");
+    if(!res.ok) throw new Error("brief "+res.status);
     const txt = await res.text();
     if(!txt){ document.getElementById('content').innerHTML='<div class="empty">This brief is empty.</div>'; return; }
     PARSED = parseBrief(txt); renderBrief(file);
@@ -230,24 +229,12 @@ async function loadFile(file){
 async function init(){
   const listEl=document.getElementById('dayList');
   try {
-    const q = encodeURIComponent("'"+FOLDER_ID+"' in parents and mimeType='application/vnd.google-apps.document'");
-    // Paginated fetch so the archive never silently truncates as it grows.
-    let raw=[], pageToken=null, guard=0;
-    do {
-      let url = DRIVE+"/files?q="+q+"&key="+API_KEY+"&fields=nextPageToken,files(id,name,createdTime)&orderBy=createdTime desc&pageSize=100";
-      if(pageToken) url += "&pageToken="+encodeURIComponent(pageToken);
-      const res = await fetch(url);
-      if(!res.ok) throw new Error("list "+res.status);
-      const data = await res.json();
-      raw = raw.concat(data.files||[]);
-      pageToken = data.nextPageToken || null;
-      guard++;
-    } while(pageToken && guard < 30);
-    let files = raw.filter(f=> /brief/i.test(f.name));
-    files.forEach(f=> f._date = dateFromTitle(f.name) || (f.createdTime||"").slice(0,10));
-    const byDate={};
-    files.forEach(f=>{ const d=f._date; if(!byDate[d]||(f.createdTime||"")>(byDate[d].createdTime||"")) byDate[d]=f; });
-    FILES = Object.values(byDate).sort((a,b)=> (b._date||"").localeCompare(a._date||""));
+    // The query string skips the CDN cache so today's brief appears right after it's committed.
+    const res = await fetch(BRIEFS_URL+"index.json?v="+Date.now());
+    if(!res.ok) throw new Error("index "+res.status);
+    const data = await res.json();
+    FILES = (data.briefs||[]).filter(d=> dateFromTitle(d)).sort((a,b)=> b.localeCompare(a))
+      .map(d=> ({id:d, name:d, _date:d}));
     if(!FILES.length){ listEl.innerHTML='<div class="empty">No briefs yet.</div>';
       document.getElementById('content').innerHTML='<div class="empty">No briefs published yet. Check back after the next morning update.</div>'; return; }
     listEl.innerHTML='';
@@ -260,7 +247,7 @@ async function init(){
   } catch(e){
     listEl.innerHTML='';
     document.getElementById('content').innerHTML='<div class="err"><b>Couldn\'t reach the briefs.</b><br>'+esc(String(e.message||e))
-      +'<br><br>Usual causes: the Drive folder isn\'t public yet, or the API key\'s website restriction doesn\'t include this exact domain.</div>';
+      +'<br><br>Check that briefs/index.json exists in the repo and the repo is public.</div>';
   }
 }
 document.getElementById('navToggle').onclick = ()=> document.documentElement.classList.toggle('nav-open');
