@@ -34,6 +34,14 @@ REQUIRED_SECTIONS = ("## AI", "## TECH", "## CAREER")
 MIN_ITEMS = 5
 
 
+def fail(reason):
+    """Stop the run. On GitHub Actions the reason also shows on the run page as an error."""
+    if os.environ.get("GITHUB_ACTIONS"):
+        one_line = reason.replace("%", "%25").replace("\r", " ").replace("\n", " ")
+        print(f"::error title=Daily brief failed::{one_line}", flush=True)
+    sys.exit(reason)
+
+
 def build_prompt(today):
     template = (ROOT / "prompt.md").read_text(encoding="utf-8")
     return template.replace("{TODAY_LONG}", today.strftime("%A, %d %B %Y")).replace(
@@ -65,10 +73,10 @@ def ask_claude(prompt):
             break
         messages.append({"role": "assistant", "content": response.content})
     else:
-        sys.exit(f"Stopped after {MAX_CONTINUATIONS} paused turns without a finished brief.")
+        fail(f"Stopped after {MAX_CONTINUATIONS} paused turns without a finished brief.")
 
     if response.stop_reason == "max_tokens":
-        sys.exit("The brief was cut off at max_tokens.")
+        fail("The brief was cut off at max_tokens.")
     return "".join(texts), usage
 
 
@@ -115,18 +123,26 @@ def main():
         write_index()
         return
 
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        fail("ANTHROPIC_API_KEY is empty. Add it under Settings > Secrets and variables > Actions > Repository secrets.")
+
     today = datetime.now(TZ).date()
-    text, usage = ask_claude(build_prompt(today))
+    try:
+        text, usage = ask_claude(build_prompt(today))
+    except anthropic.APIStatusError as e:
+        fail(f"Claude API returned {e.status_code}: {e.message}")
+    except anthropic.APIError as e:
+        fail(f"Claude API error: {e}")
 
     brief = extract_brief(text)
     if not brief:
         print(text[-3000:])
-        sys.exit("No brief found in Claude's reply.")
+        fail("No brief found in Claude's reply.")
 
     problems, item_count = check_brief(brief)
     if problems:
         print(brief)
-        sys.exit("Brief failed checks: " + "; ".join(problems))
+        fail("Brief failed checks: " + "; ".join(problems))
 
     path = save(brief, today)
     in_price, out_price = PRICES.get(MODEL, (0.0, 0.0))
