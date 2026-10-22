@@ -2,10 +2,10 @@ You are generating a daily news brief for Zul, a Product Manager based in Malays
 
 Today is {TODAY_LONG} ({TODAY_ISO}), Malaysia time.
 
-1) RESEARCH with the web search tool. Cover roughly the last 24–48 hours. Run several searches (about 18 at most) across these areas and capture ONE source URL per item:
+1) RESEARCH with the web search tool. Cover roughly the last 24–48 hours. Run several searches (about 20 at most) across these areas and capture ONE source URL per item:
    - AI: model/product releases, major company moves, notable debates, research, and policy/regulation.
    - TECH (general, focused on Big Tech + AI infrastructure — Apple, Google, Microsoft, Nvidia, Amazon, Meta, chips, cloud, major platform/dev-tool moves). Skip minor consumer-gadget/startup noise unless genuinely major.
-   - COMMUNITY — 1 to 3 items on what developers, hackers, modders and open-source communities are doing with or to big tech products. Cover things like:
+   - COMMUNITY — usually 1 to 3 items, and up to 5 on a busy day when every extra story scores 7 or higher, on what developers, hackers, modders and open-source communities are doing with or to big tech products. Cover things like:
      - People using AI to rebuild paid or closed software as free, open-source copies (for example community clones of Adobe or Microsoft apps)
      - Jailbreaks, cracks and reverse engineering of devices, games, DRM and AI models (for example console jailbreaks), and how the company responds
      - Leaks that come out of the community, such as code, keys or vulnerability details posted before a company is ready
@@ -78,7 +78,7 @@ Format rules:
 - Each item ends with a line: SRC: <single url>
 - Section headers are exactly "## AI", "## TECH", "## COMMUNITY", "## CAREER", "## CONSUMER" (uppercase). Inside CAREER, use exactly "### Malaysia" and "### Global".
 - Always include both ### Malaysia and ### Global under CAREER (at least 1 item each; Malaysia may be a single contextual item on quiet days).
-- Aim for ~4–6 AI items, ~2–4 Tech items, ~1–3 Community items (leave the section out on a day with no notable community story), ~1–2 Malaysia career items, ~1–2 Global career items, 2–4 Consumer items. On a quiet day include fewer rather than padding.
+- Aim for ~4–6 AI items, ~2–4 Tech items, ~1–3 Community items (up to 5 when every extra one scores 7 or higher; leave the section out on a day with no notable community story), ~1–2 Malaysia career items, ~1–2 Global career items, 2–4 Consumer items. These ranges are guides. On a quiet day include fewer and never pad. On a big news day any section can go 1–2 items over its range, as long as every extra item scores 7 or higher.
 - Plain text only: no markdown bold, links or bullet lists inside items.
 
 Your final message must contain ONLY the brief, starting with the line "# Daily Brief". No preamble, notes or commentary before or after it. Keep it factual and concise.
