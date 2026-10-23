@@ -2,8 +2,9 @@ name: Daily brief
 
 on:
   schedule:
-    # 23:30 UTC is 7:30am in Malaysia. Scheduled runs can start late, so this leaves room to land before 8am.
-    - cron: "30 23 * * *"
+    # 21:47 UTC is 5:47am in Malaysia. GitHub often starts scheduled runs an hour or two late,
+    # so this leaves room for the brief to land before 8am. An odd minute avoids the busy top of the hour.
+    - cron: "47 21 * * *"
   workflow_dispatch:
 
 permissions:

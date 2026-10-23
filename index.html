@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Daily Briefing: AI · Tech · Community · Career · Consumer</title>
+<title>AI Trend Radar</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -90,6 +90,11 @@
     .tab { flex:0 0 auto; padding:9px 11px; }
     .item h3 { font-size:16.5px; }
   }
+
+  /* Touch screens: every control gets a thumb-sized tap area. */
+  @media (max-width: 760px), (pointer: coarse){
+    .nav-toggle, .tab, .day, .act { min-height:44px; }
+  }
 </style>
 <script>document.documentElement.classList.toggle('nav-open', window.innerWidth > 760);</script>
 </head>
@@ -97,7 +102,7 @@
 <div class="wrap">
   <div class="backdrop" id="backdrop"></div>
   <nav class="sidebar" id="sidebar">
-    <div class="brand">Daily Logs</div>
+    <div class="brand">AI Trend Radar</div>
     <div class="brand-sub">AI · Tech · Community · Career · Consumer</div>
     <div class="nav-label">Archive</div>
     <div id="dayList"><div class="status">Loading…</div></div>
@@ -111,7 +116,14 @@
 <script>
 /* ===== CONFIG ===== */
 // Briefs are read straight from the repo, so a new brief shows up as soon as the daily workflow commits it.
-const BRIEFS_URL = "https://raw.githubusercontent.com/tgraharms/daily-brief/main/briefs/";
+// On GitHub Pages the repo comes from the page's own address, so renaming or forking the repo keeps the page working.
+const BRIEFS_URL = (()=>{
+  const owner = location.hostname.endsWith(".github.io") ? location.hostname.split(".")[0] : "";
+  const repo = location.pathname.split("/").filter(Boolean)[0];
+  return (owner && repo)
+    ? "https://raw.githubusercontent.com/"+owner+"/"+repo+"/main/briefs/"
+    : "https://raw.githubusercontent.com/tgraharms/ai-trend-radar/main/briefs/";
+})();
 /* ================= */
 
 const CATS = [{key:"AI",label:"AI News",tag:"AI"},{key:"TECH",label:"Tech News",tag:"Tech"},{key:"COMMUNITY",label:"Community",tag:"Community"},{key:"CAREER",label:"Career",tag:"Career"},{key:"CONSUMER",label:"Consumer",tag:"Consumer"}];
@@ -242,7 +254,7 @@ async function init(){
     FILES.forEach(f=>{ const btn=document.createElement('button'); btn.className='day'; btn.dataset.id=f.id;
       const rel=relLabel(f._date);
       btn.innerHTML = IC.cal + '<span class="lbl">'+(f._date?fmtDay(f._date):f.name)+'</span>' + (rel?'<span class="rel">'+rel+'</span>':'');
-      btn.onclick=()=>{ loadFile(f); if(window.innerWidth<=760) document.documentElement.classList.remove('nav-open'); };
+      btn.onclick=()=>{ loadFile(f); if(window.innerWidth<=760) closeNav(); };
       listEl.appendChild(btn); });
     loadFile(FILES[0]);
   } catch(e){
@@ -251,8 +263,15 @@ async function init(){
       +'<br><br>Check that briefs/index.json exists in the repo and the repo is public.</div>';
   }
 }
-document.getElementById('navToggle').onclick = ()=> document.documentElement.classList.toggle('nav-open');
-document.getElementById('backdrop').onclick = ()=> document.documentElement.classList.remove('nav-open');
+const navToggle = document.getElementById('navToggle');
+const syncNav = ()=> navToggle.setAttribute('aria-expanded', String(document.documentElement.classList.contains('nav-open')));
+const closeNav = ()=> { document.documentElement.classList.remove('nav-open'); syncNav(); };
+navToggle.onclick = ()=> { document.documentElement.classList.toggle('nav-open'); syncNav(); };
+document.getElementById('backdrop').onclick = closeNav;
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && window.innerWidth<=760 && document.documentElement.classList.contains('nav-open')){ closeNav(); navToggle.focus(); }
+});
+syncNav();
 init();
 </script>
 </body>

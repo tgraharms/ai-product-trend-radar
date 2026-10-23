@@ -112,6 +112,9 @@ def write_index():
 
 def report(line):
     print(line)
+    if os.environ.get("GITHUB_ACTIONS"):
+        # A notice shows the result, including cost, at the top of the run page.
+        print(f"::notice title=Brief saved::{line}", flush=True)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as f:

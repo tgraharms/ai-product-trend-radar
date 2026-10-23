@@ -1,10 +1,10 @@
-# Daily Brief
+# AI Trend Radar
 
 **An AI-written morning briefing on AI, tech and PM careers, published fresh every day.**
 
-**Read today's brief:** [tgraharms.github.io/daily-brief](https://tgraharms.github.io/daily-brief/)
+**Read today's brief:** [tgraharms.github.io/ai-trend-radar](https://tgraharms.github.io/ai-trend-radar/)
 
-![Screenshot of the Daily Brief page](docs/screenshot.png)
+<img src="docs/screenshot.png" alt="AI Trend Radar on a desktop screen" width="72%"> <img src="docs/screenshot-phone.png" alt="AI Trend Radar on a phone" width="24%">
 
 ## Why I built this
 
@@ -22,16 +22,18 @@ I built it for myself, a PM based in Malaysia. The page is public, so anyone who
 - **Career:** how the PM role is changing, hiring and pay, split into Malaysia and Global
 - **Consumer:** AI news for everyday users
 
-Every story gets an importance score from 1 to 10, a short note on why it matters, and a link to the source. The sidebar keeps every brief since June 2026.
+Every story gets an importance score from 1 to 10, a short note on why it matters, and a link to the source. Quiet days get fewer stories. On a big news day a section can carry extra stories, as long as each one scores 7 or higher.
+
+The page works on phones and desktops. On a phone, past briefs sit behind the Archive button, and every brief since June 2026 is kept.
 
 ## How it works
 
-1. Every day at 7:30am Malaysia time, GitHub starts a small script.
+1. Early every morning, GitHub starts a small script so the brief is ready before 8am Malaysia time.
 2. The script asks Claude to search the web and write the brief, following instructions I wrote in `prompt.md`.
 3. The script checks the brief has every section and enough stories, then saves it to this repo.
-4. The web page picks up the newest brief and keeps past days in the sidebar.
+4. The web page picks up the newest brief and keeps past days in the archive.
 
-<!-- To show cost, replace this comment with: Each run costs about $X in API credits. (The amount is on each run's summary under the Actions tab.) -->
+<!-- To show cost, replace this comment with: Each run costs about $X in API credits. (The amount is at the top of each run's page under the Actions tab.) -->
 
 ## Built with
 
@@ -45,8 +47,8 @@ Every story gets an importance score from 1 to 10, a short note on why it matter
 You'll need Python 3.10 or newer and a Claude API key from the [Claude Console](https://platform.claude.com/).
 
 ```bash
-git clone https://github.com/tgraharms/daily-brief.git
-cd daily-brief
+git clone https://github.com/tgraharms/ai-trend-radar.git
+cd ai-trend-radar
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=your-key-here
 python generate.py
@@ -54,4 +56,4 @@ python generate.py
 
 Today's brief lands in the `briefs/` folder. To change what it covers, edit `prompt.md`.
 
-To get your own daily copy, fork this repo, add your key under **Settings > Secrets and variables > Actions** as `ANTHROPIC_API_KEY`, and point `BRIEFS_URL` at the top of `index.html` to your fork.
+To get your own daily copy, fork this repo, add your key under **Settings > Secrets and variables > Actions** as `ANTHROPIC_API_KEY`, turn on workflows in the **Actions** tab, and switch on GitHub Pages. The page finds your fork's briefs on its own.
