@@ -1,10 +1,10 @@
-# AI Trend Radar
+# AI Product Trend Radar
 
 **An AI-written morning briefing on AI, tech and PM careers, published fresh every day.**
 
-**Read today's brief:** [tgraharms.github.io/ai-trend-radar](https://tgraharms.github.io/ai-trend-radar/)
+**Read today's brief:** [tgraharms.github.io/ai-product-trend-radar](https://tgraharms.github.io/ai-product-trend-radar/)
 
-<img src="docs/screenshot.png" alt="AI Trend Radar on a desktop screen" width="72%"> <img src="docs/screenshot-phone.png" alt="AI Trend Radar on a phone" width="24%">
+<img src="docs/screenshot.png" alt="AI Product Trend Radar on a desktop screen" width="72%"> <img src="docs/screenshot-phone.png" alt="AI Product Trend Radar on a phone" width="24%">
 
 ## Why I built this
 
@@ -47,8 +47,8 @@ The page works on phones and desktops. On a phone, past briefs sit behind the Ar
 You'll need Python 3.10 or newer and a Claude API key from the [Claude Console](https://platform.claude.com/).
 
 ```bash
-git clone https://github.com/tgraharms/ai-trend-radar.git
-cd ai-trend-radar
+git clone https://github.com/tgraharms/ai-product-trend-radar.git
+cd ai-product-trend-radar
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=your-key-here
 python generate.py

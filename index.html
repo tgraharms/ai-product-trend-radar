@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Trend Radar</title>
+<title>AI Product Trend Radar</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -102,7 +102,7 @@
 <div class="wrap">
   <div class="backdrop" id="backdrop"></div>
   <nav class="sidebar" id="sidebar">
-    <div class="brand">AI Trend Radar</div>
+    <div class="brand">AI Product Trend Radar</div>
     <div class="brand-sub">AI · Tech · Community · Career · Consumer</div>
     <div class="nav-label">Archive</div>
     <div id="dayList"><div class="status">Loading…</div></div>
@@ -122,7 +122,7 @@ const BRIEFS_URL = (()=>{
   const repo = location.pathname.split("/").filter(Boolean)[0];
   return (owner && repo)
     ? "https://raw.githubusercontent.com/"+owner+"/"+repo+"/main/briefs/"
-    : "https://raw.githubusercontent.com/tgraharms/ai-trend-radar/main/briefs/";
+    : "https://raw.githubusercontent.com/tgraharms/ai-product-trend-radar/main/briefs/";
 })();
 /* ================= */
 
