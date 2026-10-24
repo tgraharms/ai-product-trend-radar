@@ -33,7 +33,7 @@ The page works on phones and desktops. On a phone, past briefs sit behind the Ar
 3. The script checks the brief has every section and enough stories, then saves it to this repo.
 4. The web page picks up the newest brief and keeps past days in the archive.
 
-<!-- To show cost, replace this comment with: Each run costs about $X in API credits. (The amount is at the top of each run's page under the Actions tab.) -->
+Each run costs about $1 in Claude API credits, roughly $30 a month, which fits inside the monthly API credit that comes with my Claude plan. Every run's cost shows at the top of its page under the Actions tab.
 
 ## Built with
 
