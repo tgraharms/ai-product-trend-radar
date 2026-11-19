@@ -24,7 +24,7 @@ I built it for myself, a PM based in Malaysia. The page is public, so anyone who
 
 Every story gets an importance score from 1 to 10, a short note on why it matters, and a link to the source. Quiet days get fewer stories. On a big news day a section can carry extra stories, as long as each one scores 7 or higher.
 
-The page works on phones and desktops. On a phone, past briefs sit behind the Archive button, and every brief since June 2026 is kept.
+The page works on phones and desktops. The arrows at the top step through past days, and tapping the date opens a calendar of every brief since June 2026.
 
 ## How it works
 
